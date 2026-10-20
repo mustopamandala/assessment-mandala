@@ -37,9 +37,9 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--ac);outline-off
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw2KucmIqxsa34g3OtVmE9ThNEqMMger7fQwlIL4eV1Lj83Dkyf73SIkIQetVgAE68/exec";
 
 const S = [
- {id:"disc", name:"Gaya Perilaku (DISC)", min:8, note:"Pada setiap nomor, pilih SATU pernyataan yang paling menggambarkan diri Anda dalam bekerja. Tidak ada jawaban benar atau salah."},
- {id:"mbti", name:"Preferensi Kepribadian (MBTI)", min:8, note:"Pada setiap nomor, pilih pernyataan yang lebih sering sesuai dengan diri Anda. Jawab spontan dan jujur."},
- {id:"apt", name:"Tes Kemampuan (Aptitude)", min:15, note:"Soal pilihan ganda tentang angka, logika, dan bahasa. Kerjakan secepat dan seteliti mungkin; jawaban kosong dihitung salah."}
+ {id:"disc", name:"Gaya Perilaku (DISC)", min:12, note:"Pada setiap nomor, pilih SATU pernyataan yang paling menggambarkan diri Anda dalam bekerja. Tidak ada jawaban benar atau salah."},
+ {id:"mbti", name:"Preferensi Kepribadian (MBTI)", min:10, note:"Pada setiap nomor, pilih pernyataan yang lebih sering sesuai dengan diri Anda. Jawab spontan dan jujur."},
+ {id:"apt", name:"Tes Kemampuan (Aptitude)", min:25, note:"Soal pilihan ganda tentang angka, logika, dan bahasa. Kerjakan secepat dan seteliti mungkin; jawaban kosong dihitung salah."}
 ];
 
 // DISC: urutan tiap grup = D, I, S, C (diacak saat tampil)
@@ -90,6 +90,58 @@ const APT = [
 ["B, D, G, K, …",["N","O","P","Q"],2],
 ["Barang seharga Rp80.000 didiskon 25%, lalu didiskon lagi 10% dari harga setelah diskon pertama. Harga akhir …",["Rp52.000","Rp54.000","Rp56.000","Rp60.000"],1],
 ["Jumlah usia ayah dan anak 48 tahun. Usia ayah 3 kali usia anak. Usia anak adalah …",["10","12","14","16"],1]];
+
+DISC.push(
+["Saya langsung bertindak ketika melihat peluang","Saya senang memotivasi orang lain","Saya senang membantu rekan yang kesulitan","Saya memastikan semuanya sesuai standar"],
+["Saya tidak takut berselisih demi hasil","Saya meredakan ketegangan dengan bercanda","Saya menghindari konflik dan mencari titik tengah","Saya menghindari kesalahan dengan perencanaan matang"],
+["Saya cepat bosan jika terlalu lambat","Saya cepat bosan jika bekerja sendirian","Saya tidak nyaman dengan perubahan mendadak","Saya tidak nyaman dengan pekerjaan yang asal-asalan"],
+["Saat gagal, saya langsung mencari cara menang","Saat gagal, saya mencari semangat dari orang lain","Saat gagal, saya diam lalu mencoba lagi pelan-pelan","Saat gagal, saya mempelajari penyebabnya dengan teliti"],
+["Saya memimpin jalannya diskusi","Saya mencairkan suasana diskusi","Saya mendengarkan dengan sabar dalam diskusi","Saya mencatat poin penting dalam diskusi"],
+["Target yang sulit membuat saya bersemangat","Dikelilingi orang positif membuat saya bersemangat","Lingkungan yang aman dan stabil membuat saya bersemangat","Pekerjaan yang rapi dan jelas membuat saya bersemangat"],
+["Saya mengambil alih jika tim tidak bergerak","Saya menghidupkan tim yang lesu","Saya menjaga kekompakan tim","Saya memastikan tim mengikuti aturan"],
+["Saya lebih memilih cepat daripada sempurna","Saya lebih memilih seru daripada kaku","Saya lebih memilih aman daripada berisiko","Saya lebih memilih akurat daripada cepat"],
+["Atasan menilai saya berani","Atasan menilai saya komunikatif","Atasan menilai saya loyal","Atasan menilai saya teliti"],
+["Deadline mepet membuat saya makin ngebut","Deadline mepet membuat saya mencari bantuan teman","Deadline mepet tidak membuat saya panik dan tetap bertahap","Deadline mepet membuat saya cemas jika hasilnya kurang sempurna"],
+["Saya berbicara apa adanya","Saya berbicara dengan gaya menarik","Saya berbicara dengan lembut","Saya berbicara dengan data"],
+["Saya ingin dihormati","Saya ingin disukai","Saya ingin dibutuhkan","Saya ingin dipercaya ketepatannya"]);
+MBTI.push(
+["EI","Di acara ramai, saya aktif berkenalan","Di acara ramai, saya mencari sudut yang tenang"],
+["EI","Saya lebih suka rapat langsung","Saya lebih suka pesan tertulis"],
+["SN","Saya menyukai petunjuk langkah demi langkah","Saya menyukai kebebasan menafsirkan tugas"],
+["SN","Saya lebih memperhatikan apa yang ada sekarang","Saya lebih memikirkan apa yang bisa terjadi nanti"],
+["TF","Saat menolak permintaan, saya fokus pada alasan yang masuk akal","Saat menolak permintaan, saya fokus pada dampaknya ke perasaan orang"],
+["TF","Saya lebih menghargai kompetensi","Saya lebih menghargai ketulusan"],
+["JP","Saya tidak nyaman jika rencana berubah mendadak","Saya menikmati rencana yang berubah mendadak"],
+["JP","Saya mengerjakan daftar tugas secara berurutan","Saya berpindah-pindah tugas sesuai suasana hati"]);
+MBTI.sort(()=>Math.random()-.5);
+APT.push(
+["4, 9, 16, 25, …",["30","36","49","32"],1],
+["Panas : Dingin = Terang : …",["Lampu","Gelap","Siang","Cahaya"],1],
+["Sebuah mesin membuat 120 kemasan bubuk dalam 8 jam. Berapa kemasan per jam?",["12","15","18","20"],1],
+["25% dari 480 adalah …",["100","110","120","140"],2],
+["Sinonim “akurat” adalah …",["Tepat","Lambat","Kasar","Ragu"],0],
+["2, 3, 5, 8, 12, …",["15","16","17","18"],2],
+["Semua barang ekspor harus diperiksa mutunya. Maka …",["Semua barang lolos uji","Barang ekspor harus melalui pemeriksaan mutu","Barang lokal tidak boleh diperiksa","Tidak ada barang yang gagal"],1],
+["Rina lebih tinggi dari Sinta. Sinta lebih tinggi dari Tia. Siapa yang paling pendek?",["Rina","Sinta","Tia","Tidak dapat ditentukan"],2],
+["Rp1.500.000 dinaikkan 20%. Hasilnya …",["Rp1.650.000","Rp1.700.000","Rp1.800.000","Rp1.900.000"],2],
+["Antonim “sibuk” adalah …",["Padat","Luang","Giat","Rajin"],1],
+["Perbandingan gula dan coklat 2:3. Jika coklat 90 kg, gula …",["40 kg","50 kg","60 kg","70 kg"],2],
+["A, C, F, J, …",["M","N","O","P"],2],
+["3 kg bubuk coklat berharga Rp180.000. Harga 5 kg adalah …",["Rp270.000","Rp300.000","Rp320.000","Rp360.000"],1]);
+
+// Standar kecocokan posisi: apt = nilai Aptitude minimal (dari 25), disc = tipe DISC yang ideal
+const JOBS = [
+{k:["supervisor","manajer","manager","leader","kepala"],n:"Supervisor/Manajer",apt:18,disc:["D","I"]},
+{k:["akuntan","accounting","finance","keuangan","pajak","tax"],n:"Akuntan/Keuangan",apt:18,disc:["C","S"]},
+{k:["exim","ekspor","export","impor","import","shipping"],n:"Staf Ekspor-Impor",apt:17,disc:["C","D"]},
+{k:["qc","quality","mutu","lab","laboratorium"],n:"Quality Control",apt:17,disc:["C","S"]},
+{k:["hr","hrd","ga","general affair","personalia"],n:"HR/GA",apt:16,disc:["S","I"]},
+{k:["purchasing","pembelian","procurement"],n:"Purchasing",apt:16,disc:["D","C","I"]},
+{k:["admin","administrasi","sekretaris"],n:"Staf Administrasi",apt:15,disc:["C","S"]},
+{k:["sales","marketing","penjualan"],n:"Sales/Marketing",apt:14,disc:["I","D"]},
+{k:["gudang","logistik","warehouse","inventory"],n:"Staf Gudang/Logistik",apt:13,disc:["S","C"]},
+{k:["produksi","operator"],n:"Operator Produksi",apt:12,disc:["S","C"]}
+];
 
 // Panduan perlakuan HR per tipe DISC (masuk ke Google Sheets, tidak ditampilkan ke kandidat)
 const DISC_TX = {
@@ -175,12 +227,20 @@ async function submit(){
  const r = score(), sel = (o)=>Object.keys(o).length;
  const rk = Object.entries({D:r.D,I:r.I,S:r.S,C:r.C}).sort((a,b)=>b[1]-a[1]), none = r.D+r.I+r.S+r.C===0;
  const p = DISC_TX[rk[0][0]];
+ const jb = JOBS.find(j=>j.k.some(w=>new RegExp("\\b"+w+"\\b","i").test(st.cand.posisi)));
+ let fit = "Posisi belum ada di tabel, tinjau manual", std = "-";
+ if(jb){
+  const a = r.ok>=jb.apt, d1 = !none&&jb.disc.includes(rk[0][0]), d2 = !none&&jb.disc.includes(rk[1][0]);
+  std = jb.n+": Aptitude min "+jb.apt+"/"+APT.length+", DISC "+jb.disc.join("/");
+  fit = a&&d1?"Cocok, layak lanjut interview":a&&d2?"Cukup cocok, layak dipertimbangkan":(a||d1)?"Sebagian cocok, gali saat interview":"Kurang cocok";
+ }
  const data = {
   waktu_kirim:new Date().toLocaleString("id-ID"), nama:st.cand.nama, email:st.cand.email, whatsapp:st.cand.wa, posisi:st.cand.posisi,
   durasi_menit:Math.round((Date.now()-st.t0)/60000),
   disc_hasil:none?"-":rk[0][0]+" ("+p.nama+")", disc_karakter:none?"-":p.profil, disc_perlakuan:none?"-":p.treat,
   mbti_tipe:r.type,
-  aptitude_benar:r.ok, aptitude_salah:APT.length-r.ok,
+  aptitude_benar:r.ok, aptitude_salah:APT.length-r.ok, aptitude_kategori:r.ok>=18?"Baik (patut dicoba)":r.ok>=13?"Cukup":"Rendah",
+  kecocokan_posisi:fit, standar_posisi:std,
   jawaban_mentah:JSON.stringify(st.a)
  };
  view(`<div class="card"><h1>Mengirim jawaban…</h1><p class="m">Mohon jangan tutup halaman.</p></div>`);
