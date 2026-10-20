@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Portal Assessment – PT Mandala Prima Makmur</title>
+<style>
+:root{--bg:#f6f4f1;--card:#fff;--ink:#2a1d17;--mute:#6f625b;--line:#ddd5cf;--ac:#1d6b57;--acx:#fff;--warn:#b3261e}
+@media(prefers-color-scheme:dark){:root{--bg:#1b1411;--card:#261c18;--ink:#f1e9e4;--mute:#b3a59d;--line:#43342d;--ac:#4fb597;--acx:#10231c;--warn:#ff8a80}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Georgia,"Times New Roman",serif}
+header{padding:18px 20px;border-bottom:1px solid var(--line);background:var(--card)}
+header b{font-size:18px}header span{display:block;color:var(--mute);font:14px system-ui,sans-serif}
+main{max-width:720px;margin:0 auto;padding:20px}
+h1,h2{line-height:1.25;margin:.2em 0 .5em}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:18px;margin-bottom:14px}
+label.f{display:block;font:600 14px system-ui,sans-serif;margin:12px 0 4px}
+input[type=text],input[type=email],input[type=tel]{width:100%;padding:10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:16px system-ui,sans-serif}
+button{background:var(--ac);color:var(--acx);border:0;border-radius:6px;padding:11px 20px;font:600 16px system-ui,sans-serif;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+.q{font-weight:600;margin-bottom:8px}
+.o{display:flex;gap:10px;align-items:flex-start;padding:9px 10px;border:1px solid var(--line);border-radius:6px;margin:6px 0;cursor:pointer;font-family:system-ui,sans-serif;font-size:15px}
+.o:has(input:checked){border-color:var(--ac);background:color-mix(in srgb,var(--ac) 12%,transparent)}
+.o input{margin-top:4px}
+#bar{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:1px solid var(--line);padding:10px 20px;display:flex;justify-content:space-between;font:600 15px system-ui,sans-serif}
+#tm{font-variant-numeric:tabular-nums}#tm.low{color:var(--warn)}
+.m{color:var(--mute);font:14px system-ui,sans-serif}
+.err{color:var(--warn);font:14px system-ui,sans-serif;min-height:1.3em}
+</style>
+</head>
+<body>
+<header><b>PT Mandala Prima Makmur</b><span>Portal Assessment Kandidat</span></header>
+<main id="app"></main>
+<script>
+// ====== PENGATURAN ======
+// Tempel URL Web App Google Apps Script di sini (lihat apps-script.gs). Kosong = hasil diunduh sebagai file JSON.
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw2KucmIqxsa34g3OtVmE9ThNEqMMger7fQwlIL4eV1Lj83Dkyf73SIkIQetVgAE68/exec";
+
+const S = [
+ {id:"disc", name:"Gaya Perilaku (DISC)", min:8, note:"Pada setiap nomor, pilih SATU pernyataan yang paling menggambarkan diri Anda dalam bekerja. Tidak ada jawaban benar atau salah."},
+ {id:"mbti", name:"Preferensi Kepribadian (MBTI)", min:8, note:"Pada setiap nomor, pilih pernyataan yang lebih sering sesuai dengan diri Anda. Jawab spontan dan jujur."},
+ {id:"apt", name:"Tes Kemampuan (Aptitude)", min:15, note:"Soal pilihan ganda tentang angka, logika, dan bahasa. Kerjakan secepat dan seteliti mungkin; jawaban kosong dihitung salah."}
+];
+
+// DISC: urutan tiap grup = D, I, S, C (diacak saat tampil)
+const DISC = [
+["Berani mengambil keputusan cepat","Mudah bergaul dengan siapa saja","Sabar mendengarkan orang lain","Teliti memeriksa detail"],
+["Suka tantangan dan target tinggi","Suka membuat suasana kerja menyenangkan","Setia dan bisa diandalkan","Suka bekerja sesuai prosedur"],
+["Langsung ke pokok persoalan","Pandai meyakinkan orang","Tenang saat situasi memanas","Berpikir logis sebelum bertindak"],
+["Tidak mudah menyerah","Optimis dan penuh semangat","Konsisten dan stabil","Menjaga kualitas dan akurasi"],
+["Ingin memegang kendali","Ingin dikenal dan dihargai","Ingin suasana harmonis","Ingin hasil yang benar dan rapi"],
+["Cepat bertindak saat ada masalah","Menyampaikan ide dengan ekspresif","Mengutamakan kerja sama tim","Menganalisis masalah dengan data"],
+["Kompetitif","Persuasif","Pengertian","Perfeksionis"],
+["Mandiri dan tegas","Spontan dan ramah","Lembut dan mau mengalah","Hati-hati dan terstruktur"],
+["Fokus pada hasil","Fokus pada hubungan antarorang","Fokus pada kestabilan","Fokus pada ketepatan"],
+["Saat ditekan, saya makin agresif mengejar target","Saat ditekan, saya mencari dukungan dan bercerita","Saat ditekan, saya diam dan bertahan","Saat ditekan, saya memeriksa ulang semuanya"],
+["Menyukai perubahan yang cepat","Menyukai banyak interaksi","Menyukai rutinitas yang jelas","Menyukai aturan yang jelas"],
+["Orang menilai saya dominan","Orang menilai saya menyenangkan","Orang menilai saya dapat dipercaya","Orang menilai saya cermat"]];
+
+// MBTI: [dimensi, pilihan A (huruf pertama), pilihan B (huruf kedua)]
+const MBTI = [
+["EI","Saya berenergi setelah bertemu banyak orang","Saya berenergi setelah waktu sendirian"],
+["EI","Saya berpikir sambil berbicara","Saya berpikir dulu baru berbicara"],
+["EI","Saya mudah memulai obrolan dengan orang baru","Saya lebih nyaman dengan lingkaran kecil"],
+["EI","Saya suka bekerja dalam tim yang ramai","Saya suka bekerja fokus sendiri"],
+["SN","Saya fokus pada fakta dan hal nyata","Saya fokus pada pola dan kemungkinan"],
+["SN","Saya mengikuti cara yang sudah terbukti","Saya suka mencoba cara baru"],
+["SN","Saya teliti pada detail","Saya lebih suka melihat gambaran besar"],
+["SN","Saya lebih percaya pengalaman","Saya lebih percaya firasat"],
+["TF","Keputusan saya berdasar logika","Keputusan saya berdasar perasaan orang yang terlibat"],
+["TF","Saya mengutamakan keadilan yang objektif","Saya mengutamakan keharmonisan"],
+["TF","Saya memberi kritik secara terus terang","Saya memberi kritik sambil menjaga perasaan"],
+["TF","Orang menilai saya tegas","Orang menilai saya hangat"],
+["JP","Saya menyusun rencana dan jadwal","Saya fleksibel mengikuti situasi"],
+["JP","Saya menyelesaikan tugas jauh sebelum tenggat","Saya bekerja paling efektif mendekati tenggat"],
+["JP","Saya nyaman dengan keputusan yang final","Saya suka membuka banyak opsi"],
+["JP","Meja kerja saya tertata","Meja kerja saya agak berantakan, tetapi saya tahu letak barang"]];
+
+// Aptitude: [soal, [pilihan], indeks jawaban benar]
+const APT = [
+["2, 6, 18, 54, …",["108","162","148","216"],1],
+["Buku : Perpustakaan = Obat : …",["Dokter","Apotek","Sakit","Pasien"],1],
+["5 pekerja menyelesaikan suatu pekerjaan dalam 10 hari. Berapa hari yang dibutuhkan 10 pekerja dengan kecepatan sama?",["2","5","15","20"],1],
+["15% dari 240 adalah …",["30","32","36","40"],2],
+["Lawan kata “hemat” adalah …",["Irit","Boros","Cermat","Pelit"],1],
+["3, 5, 9, 17, …",["25","31","33","35"],2],
+["Semua staf gudang adalah karyawan. Semua karyawan wajib memakai ID card. Maka …",["Semua staf gudang wajib memakai ID card","Sebagian karyawan bukan staf gudang","Tidak semua staf gudang wajib ID card","Karyawan hanya staf gudang"],0],
+["Kereta melaju 60 km/jam selama 2,5 jam. Jarak yang ditempuh adalah …",["120 km","130 km","150 km","160 km"],2],
+["Sinonim “efisien” adalah …",["Berdaya guna","Mewah","Lambat","Rumit"],0],
+["B, D, G, K, …",["N","O","P","Q"],2],
+["Barang seharga Rp80.000 didiskon 25%, lalu didiskon lagi 10% dari harga setelah diskon pertama. Harga akhir …",["Rp52.000","Rp54.000","Rp56.000","Rp60.000"],1],
+["Jumlah usia ayah dan anak 48 tahun. Usia ayah 3 kali usia anak. Usia anak adalah …",["10","12","14","16"],1]];
+
+// Panduan perlakuan HR per tipe DISC (masuk ke Google Sheets, tidak ditampilkan ke kandidat)
+const DISC_TX = {
+D:{nama:"Dominance",profil:"Tegas, berorientasi hasil, cepat memutuskan, suka tantangan. Risiko: tidak sabar, kurang mendengar, bisa terkesan keras.",
+ treat:"Komunikasi singkat dan langsung ke inti. Beri target jelas dan keleluasaan menentukan cara. Hindari penjelasan bertele-tele. Saat berbeda pendapat, bahas fakta dan hasil, bukan emosi. Arahkan agar mau mendengar masukan tim."},
+I:{nama:"Influence",profil:"Antusias, komunikatif, mudah bergaul, pandai meyakinkan. Risiko: kurang detail, mudah teralihkan, sulit menyelesaikan tugas administratif.",
+ treat:"Beri ruang berbicara dan berinteraksi, serta apresiasi di depan tim. Pecah tugas menjadi langkah dengan tenggat jelas. Ingatkan detail dan dokumentasi secara ramah. Tempatkan pada peran yang banyak berhubungan dengan orang."},
+S:{nama:"Steadiness",profil:"Sabar, stabil, setia, suka bekerja sama dan membantu. Risiko: sulit menolak, lambat menghadapi perubahan, memendam masalah.",
+ treat:"Jelaskan alasan setiap perubahan dan beri waktu beradaptasi. Hindari tekanan mendadak. Tanyakan pendapatnya secara langsung karena jarang bersuara sendiri. Beri prosedur dan pembagian tugas yang jelas. Apresiasi kesetiaannya dan dorong berani menyampaikan keberatan."},
+C:{nama:"Conscientiousness",profil:"Teliti, analitis, patuh prosedur, menjaga kualitas. Risiko: perfeksionis, lambat memutuskan, kaku, terlalu kritis.",
+ treat:"Beri data, standar, dan instruksi tertulis yang jelas. Beri waktu cukup untuk menganalisis. Hindari perubahan arah tanpa dasar. Kritik dengan fakta, bukan penilaian pribadi. Dorong agar berani memutuskan meski data belum sempurna."}
+};
+
+// ====== LOGIKA ======
+const $ = s => document.querySelector(s);
+const st = {cand:{}, a:{disc:{},mbti:{},apt:{}}, left:0, timer:null, t0:null};
+const shuf = a => a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(x=>x[1]);
+const discOrder = DISC.map(g=>shuf([0,1,2,3]));
+const esc = t => String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const view = html => { $("#app").innerHTML = html; window.scrollTo(0,0); };
+
+function intro(){
+ view(`<div class="card"><h1>Selamat datang</h1>
+ <p>Assessment ini terdiri dari 3 bagian dengan batas waktu masing-masing: DISC (${S[0].min} menit), MBTI (${S[1].min} menit), dan Aptitude (${S[2].min} menit). Siapkan koneksi internet yang stabil dan tempat yang tenang. Jangan menutup halaman sampai selesai.</p>
+ <label class="f" for="n">Nama lengkap</label><input id="n" type="text" autocomplete="name">
+ <label class="f" for="e">Email</label><input id="e" type="email" autocomplete="email">
+ <label class="f" for="w">Nomor WhatsApp</label><input id="w" type="tel" autocomplete="tel">
+ <label class="f" for="p">Posisi yang dilamar</label><input id="p" type="text">
+ <p class="err" id="er"></p><button onclick="begin()">Mulai assessment</button></div>`);
+}
+function begin(){
+ const c = {nama:$("#n").value.trim(), email:$("#e").value.trim(), wa:$("#w").value.trim(), posisi:$("#p").value.trim()};
+ if(!c.nama||!c.email||!c.wa||!c.posisi) return $("#er").textContent="Lengkapi semua kolom sebelum memulai.";
+ if(!/^\S+@\S+\.\S+$/.test(c.email)) return $("#er").textContent="Format email belum benar.";
+ st.cand = c; st.t0 = new Date(); brief(0);
+}
+function brief(i){
+ clearInterval(st.timer);
+ view(`<div class="card"><p class="m">Bagian ${i+1} dari ${S.length}</p><h1>${S[i].name}</h1>
+ <p>${S[i].note}</p><p><b>Waktu: ${S[i].min} menit.</b> Hitung mundur dimulai saat Anda menekan tombol di bawah. Jika waktu habis, jawaban otomatis tersimpan dan Anda lanjut ke bagian berikutnya.</p>
+ <p class="m">Gunakan jeda ini untuk beristirahat sejenak sebelum mulai.</p>
+ <button onclick="start(${i})">Mulai bagian ${i+1}</button></div>`);
+}
+function start(i){
+ const id = S[i].id; let h = "";
+ if(id==="disc") h = DISC.map((g,n)=>qBlock(id,n,`Nomor ${n+1}`,discOrder[n].map(k=>[k,g[k]]))).join("");
+ if(id==="mbti") h = MBTI.map((m,n)=>qBlock(id,n,`Nomor ${n+1}`,[[0,m[1]],[1,m[2]]])).join("");
+ if(id==="apt") h = APT.map((m,n)=>qBlock(id,n,`${n+1}. ${esc(m[0])}`,m[1].map((t,k)=>[k,t]))).join("");
+ view(`<div id="bar"><span>${S[i].name}</span><span id="tm"></span></div>${h}
+ <p class="err" id="er"></p><button onclick="done(${i},false)">Selesai bagian ini</button>`);
+ st.left = S[i].min*60; tick();
+ st.timer = setInterval(()=>{ st.left--; tick(); if(st.left<=0) done(i,true); },1000);
+}
+function qBlock(id,n,title,opts){
+ const sel = st.a[id][n];
+ return `<div class="card"><div class="q">${title}</div>${opts.map(([k,t])=>
+ `<label class="o"><input type="radio" name="${id}${n}" ${sel===k?"checked":""} onchange="st.a['${id}'][${n}]=${k}"><span>${esc(t)}</span></label>`).join("")}</div>`;
+}
+function tick(){
+ const m = Math.floor(st.left/60), s = st.left%60, el = $("#tm");
+ el.textContent = `${m}:${String(s).padStart(2,"0")}`; el.className = st.left<=60?"low":"";
+}
+function total(id){ return {disc:DISC,mbti:MBTI,apt:APT}[id].length; }
+function done(i,auto){
+ const id = S[i].id, left = total(id)-Object.keys(st.a[id]).length;
+ if(!auto && left>0 && !confirm(`Masih ada ${left} nomor belum dijawab. Tetap lanjut?`)) return;
+ clearInterval(st.timer);
+ i < S.length-1 ? brief(i+1) : submit();
+}
+function score(){
+ const d = {D:0,I:0,S:0,C:0}; Object.entries(st.a.disc).forEach(([n,k])=>d["DISC"[k]]++);
+ const mx = Math.max(...Object.values(d));
+ const dom = Object.keys(d).filter(k=>d[k]===mx).join("/");
+ let type = ""; const det = {};
+ ["EI","SN","TF","JP"].forEach(dm=>{
+  let a=0,b=0; MBTI.forEach((m,n)=>{ if(m[0]===dm && n in st.a.mbti) st.a.mbti[n]===0?a++:b++; });
+  det[dm]=a+":"+b; type += a>b?dm[0]:b>a?dm[1]:"X";
+ });
+ let ok = 0; APT.forEach((m,n)=>{ if(st.a.apt[n]===m[2]) ok++; });
+ return {D:d.D,I:d.I,S:d.S,C:d.C,dom,type,det,ok};
+}
+async function submit(){
+ const r = score(), sel = (o)=>Object.keys(o).length;
+ const rk = Object.entries({D:r.D,I:r.I,S:r.S,C:r.C}).sort((a,b)=>b[1]-a[1]), none = r.D+r.I+r.S+r.C===0;
+ const p = DISC_TX[rk[0][0]];
+ const data = {
+  waktu_kirim:new Date().toLocaleString("id-ID"), nama:st.cand.nama, email:st.cand.email, whatsapp:st.cand.wa, posisi:st.cand.posisi,
+  durasi_menit:Math.round((Date.now()-st.t0)/60000),
+  disc_hasil:none?"-":rk[0][0]+" ("+p.nama+")", disc_karakter:none?"-":p.profil, disc_perlakuan:none?"-":p.treat,
+  mbti_tipe:r.type,
+  aptitude_benar:r.ok, aptitude_salah:APT.length-r.ok,
+  jawaban_mentah:JSON.stringify(st.a)
+ };
+ view(`<div class="card"><h1>Mengirim jawaban…</h1><p class="m">Mohon jangan tutup halaman.</p></div>`);
+ let ok = false;
+ if(WEB_APP_URL){
+  try{ await fetch(WEB_APP_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(data)}); ok = true; }catch(e){}
+ }
+ if(!ok){
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));
+  a.download = "hasil-"+st.cand.nama.replace(/\s+/g,"-")+".json"; a.click();
+ }
+ view(`<div class="card"><h1>Terima kasih, ${esc(st.cand.nama)}</h1>
+ <p>${ok?"Jawaban Anda sudah terkirim ke tim HR PT Mandala Prima Makmur.":"Jawaban Anda diunduh sebagai file. Mohon kirimkan file tersebut ke tim HR."} Hasil akan ditinjau oleh tim HR, dan kami akan menghubungi Anda untuk tahap berikutnya.</p></div>`);
+}
+intro();
+</script>
+</body>
+</html>
